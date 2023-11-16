@@ -1,0 +1,5 @@
+clusters:
+  standalone:
+  - i-01e4c17cf0508e761
+rules: {}
+security_group_id: sg-08e69b349ef0091d6
