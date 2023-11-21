@@ -6,19 +6,10 @@ from dotenv import load_dotenv
 import traceback
 import sys
 from teardown import teardown
+from cluster_configs import cluster_configs
 
 LAUNCH_APP_SCRIPT = 'src/mysql_standalone.sh'
 DEPLOY_FILE = 'deployment.yml'
-
-# Configure the instances for each cluster of the benchmark
-cluster_configs = [
-    {
-        'name': 'standalone',
-        'zone': 'us-east-1a',
-        'n_instances': 1,
-        'instance_type': 't2.micro',
-    },
-]
 
 key_name = 'final_project_gen_key'
 
@@ -52,11 +43,11 @@ def get_vpc_id():
     return vpcs[0]['VpcId']
 
 # Function sets up cluster config, creates target group, instances, and registers targets.
-def setup_config(security_group_id, zone, name, n_instances, instance_type):
+def setup_config(security_group_id, zone, name, n_instances, instance_type, launch_script):
     print('APPLYTING CONFIG ', name)
     instance_ids = []
     try:
-        instance_ids = create_instances(n_instances, security_group_id, zone, name, instance_type)
+        instance_ids = create_instances(n_instances, security_group_id, zone, name, launch_script, instance_type)
     except Exception as e:
         print(e, traceback.format_exc())
         sys.exit(1)
@@ -71,7 +62,7 @@ def is_key_pair_exists(key_name):
     except:
         return False
 # Creates EC2 instances with specified parameters and waits for them to be running.
-def create_instances(n_instances, security_group_id, zone, cluster_name, instance_type='t2.micro', image_id='ami-053b0d53c279acc90'):
+def create_instances(n_instances, security_group_id, zone, cluster_name, launch_script=LAUNCH_APP_SCRIPT, instance_type='t2.micro', image_id='ami-053b0d53c279acc90'):
     # https://boto3.amazonaws.com/v1/documentation/api/latest/reference/services/ec2/service-resource/create_instances.html
     
     
@@ -95,7 +86,7 @@ def create_instances(n_instances, security_group_id, zone, cluster_name, instanc
         },
         SecurityGroupIds=[security_group_id],
         Monitoring={ 'Enabled': True },
-        UserData=get_launch_app_script_content(LAUNCH_APP_SCRIPT),
+        UserData=get_launch_app_script_content(launch_script),
         KeyName=key_name
     )
     instance_ids = [created_instance['InstanceId'] for created_instance in created_instances['Instances']]
@@ -138,6 +129,34 @@ def authorize_security_group(security_group_id, Cidr_ip='0.0.0.0/0', Cidr_Ipv6='
                 'IpRanges': [{'CidrIp': Cidr_ip}],
                 'Ipv6Ranges': [{ 'CidrIpv6': Cidr_Ipv6 }],
             },
+            {
+                'IpProtocol': 'tcp',
+                'FromPort': 1186,
+                'ToPort': 1186,
+                'IpRanges': [{'CidrIp': Cidr_ip}],
+                'Ipv6Ranges': [{ 'CidrIpv6': Cidr_Ipv6 }],
+            },
+            {
+                'IpProtocol': 'tcp',
+                'FromPort': 3306,
+                'ToPort': 3306,
+                'IpRanges': [{'CidrIp': Cidr_ip}],
+                'Ipv6Ranges': [{ 'CidrIpv6': Cidr_Ipv6 }],
+            },
+            {
+                'IpProtocol': 'tcp',
+                'FromPort': 11860,
+                'ToPort': 11860,
+                'IpRanges': [{'CidrIp': Cidr_ip}],
+                'Ipv6Ranges': [{ 'CidrIpv6': Cidr_Ipv6 }],
+            },
+            {
+                'IpProtocol': 'tcp',
+                'FromPort': 1024,
+                'ToPort': 65535,
+                'IpRanges': [{'CidrIp': Cidr_ip}],
+                'Ipv6Ranges': [{ 'CidrIpv6': Cidr_Ipv6 }],
+            }, # TODO fix
         ],
     )
     print('AUTHORIZED SECURITY GROUP', security_group_id)
@@ -153,8 +172,8 @@ def run():
     clusters = {} # instance ids, target_group_arn
     rules = {} # rules
     try:
-        security_group_id = create_security_group()
         for cluster_config in cluster_configs:
+            security_group_id = create_security_group(name=f'security_{cluster_config["name"]}')
             instance_ids = setup_config(security_group_id, **cluster_config)
             clusters[cluster_config['name']] = instance_ids
 
