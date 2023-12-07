@@ -6,7 +6,7 @@ from dotenv import load_dotenv
 import traceback
 import sys
 from teardown import teardown
-from cluster_configs import cluster_configs
+from deployment_configs import deployment_configs
 
 LAUNCH_APP_SCRIPT = 'src/mysql_standalone.sh'
 DEPLOY_FILE = 'deployment.yml'
@@ -43,11 +43,19 @@ def get_vpc_id():
     return vpcs[0]['VpcId']
 
 # Function sets up cluster config, creates target group, instances, and registers targets.
-def setup_config(security_group_id, zone, name, n_instances, instance_type, launch_script):
+def setup_config(security_group_id, zone, name, n_instances, instance_type, security_group, launch_script=None, public_ip=True):
     print('APPLYTING CONFIG ', name)
     instance_ids = []
     try:
-        instance_ids = create_instances(n_instances, security_group_id, zone, name, launch_script, instance_type)
+        instance_ids = create_instances(
+            n_instances=n_instances,
+            security_group_id=security_group_id,
+            zone=zone,
+            cluster_name=name, 
+            instance_type=instance_type,
+            launch_script=launch_script,
+            has_public_ip=public_ip
+        )
     except Exception as e:
         print(e, traceback.format_exc())
         sys.exit(1)
@@ -61,10 +69,10 @@ def is_key_pair_exists(key_name):
         return True
     except:
         return False
+
 # Creates EC2 instances with specified parameters and waits for them to be running.
-def create_instances(n_instances, security_group_id, zone, cluster_name, launch_script=LAUNCH_APP_SCRIPT, instance_type='t2.micro', image_id='ami-053b0d53c279acc90'):
+def create_instances(n_instances, security_group_id, zone, cluster_name, has_public_ip=True, launch_script=LAUNCH_APP_SCRIPT, instance_type='t2.micro', image_id='ami-053b0d53c279acc90'):
     # https://boto3.amazonaws.com/v1/documentation/api/latest/reference/services/ec2/service-resource/create_instances.html
-    
     
     if not is_key_pair_exists(key_name):
         key_pair = ec2_client.create_key_pair(
@@ -84,12 +92,27 @@ def create_instances(n_instances, security_group_id, zone, cluster_name, launch_
         Placement={
             'AvailabilityZone': zone,
         },
-        SecurityGroupIds=[security_group_id],
+        NetworkInterfaces=[
+            {
+                'DeviceIndex': device_idx,
+                'AssociatePublicIpAddress': has_public_ip
+            } for device_idx in range(n_instances)
+        ],
+        # SecurityGroupIds=,
         Monitoring={ 'Enabled': True },
-        UserData=get_launch_app_script_content(launch_script),
+        UserData=get_launch_app_script_content(launch_script) if launch_script is not None else "",
         KeyName=key_name
     )
+
+    
+    
     instance_ids = [created_instance['InstanceId'] for created_instance in created_instances['Instances']]
+
+    for instance_id in instance_ids:
+        ec2_client.modify_instance_attribute(
+            InstanceId=instance_id,
+            Groups=[security_group_id],
+        )
     print('CREATED INSTANCES ', instance_ids)
     await_instances_running(instance_ids)
     return instance_ids
@@ -107,57 +130,24 @@ def ec2_client_wait(instance_ids, event):
     return waiter.wait(InstanceIds=instance_ids)
 
 # Creates a security group and authorizes ingress for specified ports.
-def create_security_group(name='mySecurityGroup', description='mySecurityGroupDescription'):
+def create_security_group(security_group_config, description='my description'):
     # https://boto3.amazonaws.com/v1/documentation/api/latest/reference/services/ec2/client/create_security_group.html
-    created_security_group = ec2_client.create_security_group(GroupName=name, Description=description)#, VpcId=vpc_id)
+    created_security_group = ec2_client.create_security_group(GroupName=security_group_config["GroupName"], Description=description)
 
     security_group_id = created_security_group['GroupId']
     print('CREATED SECURITY GROUP', security_group_id)
-    authorize_security_group(security_group_id)
+    authorize_security_group(
+        security_group_id=security_group_id,
+        ip_permissions=security_group_config["IpPermissions"]
+    )
     return security_group_id
 
 # This function authorizes security group ingress for specified ports.
-def authorize_security_group(security_group_id, Cidr_ip='0.0.0.0/0', Cidr_Ipv6='::0/0'):
+def authorize_security_group(security_group_id, ip_permissions):
     # https://boto3.amazonaws.com/v1/documentation/api/latest/reference/services/ec2/client/authorize_security_group_ingress.html
     authorized_security_group = ec2_client.authorize_security_group_ingress(
         GroupId=security_group_id,
-        IpPermissions=[
-            {
-                'IpProtocol': 'tcp',
-                'FromPort': 22,
-                'ToPort': 22,
-                'IpRanges': [{'CidrIp': Cidr_ip}],
-                'Ipv6Ranges': [{ 'CidrIpv6': Cidr_Ipv6 }],
-            },
-            {
-                'IpProtocol': 'tcp',
-                'FromPort': 1186,
-                'ToPort': 1186,
-                'IpRanges': [{'CidrIp': Cidr_ip}],
-                'Ipv6Ranges': [{ 'CidrIpv6': Cidr_Ipv6 }],
-            },
-            {
-                'IpProtocol': 'tcp',
-                'FromPort': 3306,
-                'ToPort': 3306,
-                'IpRanges': [{'CidrIp': Cidr_ip}],
-                'Ipv6Ranges': [{ 'CidrIpv6': Cidr_Ipv6 }],
-            },
-            {
-                'IpProtocol': 'tcp',
-                'FromPort': 11860,
-                'ToPort': 11860,
-                'IpRanges': [{'CidrIp': Cidr_ip}],
-                'Ipv6Ranges': [{ 'CidrIpv6': Cidr_Ipv6 }],
-            },
-            {
-                'IpProtocol': 'tcp',
-                'FromPort': 1024,
-                'ToPort': 65535,
-                'IpRanges': [{'CidrIp': Cidr_ip}],
-                'Ipv6Ranges': [{ 'CidrIpv6': Cidr_Ipv6 }],
-            }, # TODO fix
-        ],
+        IpPermissions=ip_permissions,
     )
     print('AUTHORIZED SECURITY GROUP', security_group_id)
     return authorized_security_group
@@ -172,13 +162,14 @@ def run():
     clusters = {} # instance ids, target_group_arn
     rules = {} # rules
     try:
-        for cluster_config in cluster_configs:
-            security_group_id = create_security_group(name=f'security_{cluster_config["name"]}')
+        for cluster_config in deployment_configs:
+            print(cluster_config)
+            security_group_id = create_security_group(security_group_config=cluster_config['security_group'])
             instance_ids = setup_config(security_group_id, **cluster_config)
             clusters[cluster_config['name']] = instance_ids
 
         rule_priority = 0
-        for cluster_config in cluster_configs:
+        for cluster_config in deployment_configs:
             instance_ids = clusters[cluster_config['name']]
             rule_priority += 1
 
