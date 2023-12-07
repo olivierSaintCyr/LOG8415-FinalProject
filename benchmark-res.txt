@@ -1,0 +1,80 @@
+RESULT
+
+
+sysbench oltp_read_write --table_size=100000 --threads=32 --time=10 --max-requests=0 --mysql-host=ip-172-31-89-224.ec2.internal --mysql-port=3306 --mysql-db=sakila --mysql-user=myapp1 --mysql-password=testpwd run
+
+STANDALONE RESULT
+
+Running the test with following options:
+Number of threads: 32
+Initializing random number generator from current time
+
+
+Initializing worker threads...
+
+Threads started!
+
+SQL statistics:
+    queries performed:
+        read:                            34160
+        write:                           9760
+        other:                           4880
+        total:                           48800
+    transactions:                        2440   (242.87 per sec.)
+    queries:                             48800  (4857.35 per sec.)
+    ignored errors:                      0      (0.00 per sec.)
+    reconnects:                          0      (0.00 per sec.)
+
+General statistics:
+    total time:                          10.0444s
+    total number of events:              2440
+
+Latency (ms):
+         min:                                   35.32
+         avg:                                  131.34
+         max:                                  342.29
+         95th percentile:                      150.29
+         sum:                               320458.54
+
+Threads fairness:
+    events (avg/stddev):           76.2500/0.79
+    execution time (avg/stddev):   10.0143/0.01
+
+CLUSTER RES
+
+sysbench oltp_read_write --table_size=100000 --threads=32 --time=10 --max-requests=0 --mysql-host=ip-172-31-85-193.ec2.internal --mysql-port=3306 --mysql-db=sakila --mysql-user=myapp1 --mysql-password=testpwd run
+
+Running the test with following options:
+Number of threads: 32
+Initializing random number generator from current time
+
+
+Initializing worker threads...
+
+Threads started!
+
+SQL statistics:
+    queries performed:
+        read:                            52780
+        write:                           15080
+        other:                           7540
+        total:                           75400
+    transactions:                        3770   (374.81 per sec.)
+    queries:                             75400  (7496.23 per sec.)
+    ignored errors:                      0      (0.00 per sec.)
+    reconnects:                          0      (0.00 per sec.)
+
+General statistics:
+    total time:                          10.0562s
+    total number of events:              3770
+
+Latency (ms):
+         min:                                   17.62
+         avg:                                   85.22
+         max:                                  199.76
+         95th percentile:                      101.13
+         sum:                               321280.28
+
+Threads fairness:
+    events (avg/stddev):           117.8125/1.07
+    execution time (avg/stddev):   10.0400/0.01
