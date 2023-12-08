@@ -29,6 +29,7 @@ ec2_client = session.client('ec2')      # https://boto3.amazonaws.com/v1/documen
 
 # This function reads a file and returns its content.
 def get_launch_app_script_content(path: str):
+    print('getting launch app script content ', path)
     with open(path, 'r') as file:
         return file.read()
     
@@ -104,8 +105,6 @@ def create_instances(n_instances, security_group_id, zone, cluster_name, has_pub
         KeyName=key_name
     )
 
-    
-    
     instance_ids = [created_instance['InstanceId'] for created_instance in created_instances['Instances']]
 
     for instance_id in instance_ids:

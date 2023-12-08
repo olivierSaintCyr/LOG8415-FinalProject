@@ -21,12 +21,13 @@ def describe_instances(instance_ids: list[str], client):
         InstanceIds=instance_ids
     )
 
-def exec_ssh_command(server: str, username: str, key_path: str, cmd: str):
+def exec_ssh_command(server: str, username: str, key_path: str, cmd: str, wait=True):
     pkey = paramiko.RSAKey.from_private_key_file(key_path)
     with paramiko.SSHClient() as ssh:
         ssh.set_missing_host_key_policy(paramiko.AutoAddPolicy())
         ssh.connect(server, username=username, pkey=pkey)
         ssh_stdin, ssh_stdout, ssh_stderr = ssh.exec_command(cmd)
-        print("stdout:", ssh_stdout.readlines())
-        print("stderr:", ssh_stderr.readlines())
+        if wait:
+            print("stdout:", ssh_stdout.readlines())
+            print("stderr:", ssh_stderr.readlines())
         

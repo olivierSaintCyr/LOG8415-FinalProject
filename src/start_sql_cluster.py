@@ -15,7 +15,8 @@ def start_sql_cluster(node_roles: dict):
     
     def get_start_data_node_cmd(master_private_hostname: str):
         return f'sudo /opt/mysqlcluster/home/mysqlc/bin/ndbd -c {master_private_hostname}:1186'
-        
+    
+    # TODO test
     def get_start_sqld_cmd():
         return 'sudo /opt/mysqlcluster/home/mysqlc/bin/mysqld --defaults-file=/opt/mysqlcluster/deploy/conf/my.cnf --user=root'
 
@@ -59,7 +60,6 @@ if __name__ == '__main__':
         region_name='us-east-1',
     )
     client = session.client('ec2')
-
 
     instance_ids = utils.get_cluster_instances(
         deployment_file=DEPLOYMENT_FILE,

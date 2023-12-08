@@ -12,7 +12,7 @@ app = Flask(__name__)
 
 CONFIG_FILE = 'config.json'
 SSH_HOST_NAME = 'ubuntu'
-SSH_KEY_PATH = '../../final_project_gen_key.pem'
+SSH_KEY_PATH = 'proxy_key.pem'
 
 def load_config(config_path: str = CONFIG_FILE):
     with open(config_path, 'r') as f:
@@ -38,6 +38,12 @@ class Proxy:
 
     def set_mode(self, mode: Mode):
         self.mode = mode
+    
+    def is_query_write(self, query):
+        for write_query in self.write_queries:
+            if write_query in query:
+                return True
+        return False
     
     def exec(self, query: str):
         return self.execution[self.mode](query)
@@ -74,7 +80,7 @@ class Proxy:
         return self.execute_query(
             host=master_host,
             query=query
-        )
+        ), master_host
 
     def exec_random(self, query):
         host = random.choice(self.hosts['dataNodes']) if not self.is_query_write(query) else self.hosts['master']
@@ -82,14 +88,8 @@ class Proxy:
         return self.execute_query(
             host=host,
             query=query
-        )
+        ), host
     
-    def is_query_write(self, query):
-        for write_query in self.write_queries:
-            if write_query in query:
-                return True
-        return False
-
     def exec_customized(self, query):
         def pick_closest_host():
             hosts = [self.hosts['master'], *self.hosts['dataNodes']]
@@ -101,7 +101,7 @@ class Proxy:
             return self.execute_query(
                 host=self.hosts['master'],
                 query=query,
-            )
+            ), self.hosts["master"]
         
         closest = pick_closest_host()
         
@@ -110,7 +110,7 @@ class Proxy:
         return self.execute_query(
             host=closest,
             query=query,
-        )
+        ), closest
         
 config = load_config()
 proxy = Proxy(config=config)
@@ -135,10 +135,11 @@ def exec_query():
     body = request.get_json()
     query = body['query']
     
-    res = proxy.exec(query)
+    res, host = proxy.exec(query)
     
     return jsonify({
         'mode': proxy.mode.name,
+        'from': host,
         'result': res,
     })
 
