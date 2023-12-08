@@ -1,0 +1,10 @@
+{
+    "sqlClusterHostnames": {
+        "master": "ec2-35-173-122-219.compute-1.amazonaws.com",
+        "dataNodes": [
+            "ec2-3-86-254-70.compute-1.amazonaws.com",
+            "ec2-3-94-101-139.compute-1.amazonaws.com",
+            "ec2-54-162-103-141.compute-1.amazonaws.com"
+        ]
+    }
+}
