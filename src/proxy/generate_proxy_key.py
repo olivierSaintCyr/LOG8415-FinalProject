@@ -15,7 +15,8 @@ CLUSTER_NAME = 'sql_cluster'
 
 def create_key(key_name: str, key_dir: str):
     key_file = os.path.join(key_dir, f'{key_name}.pem')
-    subprocess.check_output(f"ssh-keygen -m PEM -f {key_file} -N ''", shell=True)
+    if not os.path.exists(key_file):
+        subprocess.check_output(f"ssh-keygen -m PEM -f {key_file} -N ''", shell=True)
     return key_file
 
 def get_pub_key(key_file: str):
@@ -53,7 +54,7 @@ if __name__ == '__main__':
         instance_ids=instance_ids,
     )['Reservations'][0]['Instances']
 
-    hosts = [
+    sql_cluster_hosts = [
         description['PublicDnsName'] for description in instance_descriptions
     ]
 
@@ -66,5 +67,5 @@ if __name__ == '__main__':
     
     add_key_to_instances(
         pub_key=pub_key,
-        hosts=hosts,
+        hosts=sql_cluster_hosts,
     )
