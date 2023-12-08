@@ -66,8 +66,6 @@ class Proxy:
             finally:
                 connection.close()
             
-        
-
     def exec_direct_hit(self, query):
         master_host = self.hosts['master']
         print('direct hit exec of', query)
