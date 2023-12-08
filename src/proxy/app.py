@@ -93,7 +93,7 @@ class Proxy:
     def exec_customized(self, query):
         def pick_closest_host():
             hosts = [self.hosts['master'], *self.hosts['dataNodes']]
-            pings = [(host, ping(host, timeout=1).rtt_avg_ms) for host in hosts]
+            pings = [(host, ping(host, count=2, timeout=1).rtt_avg_ms) for host in hosts]
             return min(pings, key=lambda p: p[1])[0]
 
         if self.is_query_write(query):
