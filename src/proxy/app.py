@@ -5,6 +5,8 @@ from sshtunnel import SSHTunnelForwarder
 import paramiko
 import pymysql
 import os
+import random
+from pythonping import ping
 
 app = Flask(__name__)
 
@@ -32,6 +34,7 @@ class Proxy:
             Proxy.Mode.RANDOM: self.exec_random,
             Proxy.Mode.CUSTOMIZED: self.exec_customized,
         }
+        self.write_queries = [ "create", "insert", "update", "delete", "grant", "revoke"]
 
     def set_mode(self, mode: Mode):
         self.mode = mode
@@ -49,7 +52,7 @@ class Proxy:
             remote_bind_address=(self.hosts['master'], 3306),
             ssh_config_file=None,
             allow_agent=False,
-        ) as tunnel:
+        ):
             connection = pymysql.connect(
                 host=self.hosts['master'],
                 user='myapp1',
@@ -68,18 +71,47 @@ class Proxy:
             
     def exec_direct_hit(self, query):
         master_host = self.hosts['master']
-        print('direct hit exec of', query)
         return self.execute_query(
             host=master_host,
             query=query
         )
 
     def exec_random(self, query):
-        print('random exec of', query)
+        host = random.choice(self.hosts['dataNodes']) if not self.is_query_write(query) else self.hosts['master']
+        print(f'random exec of {query} on {host}')
+        return self.execute_query(
+            host=host,
+            query=query
+        )
+    
+    def is_query_write(self, query):
+        for write_query in self.write_queries:
+            if write_query in query:
+                return True
+        return False
 
     def exec_customized(self, query):
-        print('customized exec', query)
+        def pick_closest_host():
+            hosts = [self.hosts['master'], *self.hosts['dataNodes']]
+            pings = [(host, ping(host, timeout=1).rtt_avg_ms) for host in hosts]
+            return min(pings, key=lambda p: p[1])[0]
 
+        if self.is_query_write(query):
+            print(f'customized exec {query} on master {self.hosts["master"]}')
+            return self.execute_query(
+                host=self.hosts['master'],
+                query=query,
+            )
+        
+        closest = pick_closest_host()
+        
+        print(f'customized exec {query} on {closest}')
+        
+        return self.execute_query(
+            host=closest,
+            query=query,
+        )
+        
 config = load_config()
 proxy = Proxy(config=config)
 
