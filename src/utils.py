@@ -1,6 +1,8 @@
 import boto3
 import yaml
 import paramiko
+import os
+import subprocess
 
 def get_deployment(deployment_file: str):
     with open(deployment_file, 'r') as f:
@@ -30,4 +32,32 @@ def exec_ssh_command(server: str, username: str, key_path: str, cmd: str, wait=T
         if wait:
             print("stdout:", ssh_stdout.readlines())
             print("stderr:", ssh_stderr.readlines())
-        
+
+def create_key(key_name: str, key_dir: str):
+    key_file = os.path.join(key_dir, f'{key_name}.pem')
+    if not os.path.exists(key_file):
+        subprocess.check_output(f"ssh-keygen -m PEM -f {key_file} -N ''", shell=True)
+    return key_file
+
+def get_pub_key(key_file: str):
+    pub_key_content = subprocess.check_output(f"ssh-keygen -y -f {key_file}", shell=True).decode('utf-8')
+    return pub_key_content
+
+def add_key_to_instances(pub_key: str, hosts: list[dict], key_path: str):
+    for host in hosts:
+        exec_ssh_command(
+            server=host,
+            username='ubuntu',
+            key_path=key_path,
+            cmd=f'''
+                grep -qxF "{pub_key}" .ssh/authorized_keys || echo "{pub_key}" >> .ssh/authorized_keys;
+            '''
+        )
+
+def scp_to_instance(host: str, user: str, key_file: str, file: str):
+    out = subprocess.check_output(f'pwd')
+    print(out)
+    try:
+        out = subprocess.check_output(['scp', '-i', key_file, file, f'{user}@{host}:/home/{user}'])
+    except subprocess.CalledProcessError as e:
+        print(e.output)

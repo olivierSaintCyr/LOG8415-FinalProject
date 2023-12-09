@@ -93,6 +93,56 @@ deployment_configs = [
     #     'zone': 'us-east-1a',
     #     'n_instances': 1,
     #     'instance_type': 't2.large',
+    #     'security_group': {
+    #         'GroupName': 'gatekeeper-ingress',
+    #         'IpPermissions':[
+    #             {
+    #                 'IpProtocol': 'tcp',
+    #                 'FromPort': 22,
+    #                 'ToPort': 22,
+    #                 'IpRanges': [{'CidrIp': Cidr_ip}],
+    #                 'Ipv6Ranges': [{ 'CidrIpv6': Cidr_Ipv6 }],
+    #             },
+    #             {
+    #                 'IpProtocol': 'tcp',
+    #                 'FromPort': 80,
+    #                 'ToPort': 80,
+    #                 'IpRanges': [{'CidrIp': Cidr_ip}],
+    #                 'Ipv6Ranges': [{ 'CidrIpv6': Cidr_Ipv6 }],
+    #             },
+    #         ]
+    #     }
+    # },
+    {
+        'name': 'gatekeeper-egress',
+        'zone': 'us-east-1a',
+        'n_instances': 1,
+        'instance_type': 't2.large',
+        'security_group': {
+            'GroupName': 'gatekeeper-egress',
+            'IpPermissions':[
+                {
+                    'IpProtocol': 'tcp',
+                    'FromPort': 22,
+                    'ToPort': 22,
+                    'IpRanges': [{'CidrIp': Cidr_ip}],
+                    'Ipv6Ranges': [{ 'CidrIpv6': Cidr_Ipv6 }],
+                },
+                {
+                    'IpProtocol': 'tcp',
+                    'FromPort': 80,
+                    'ToPort': 80,
+                    'IpRanges': [{'CidrIp': Cidr_ip}],
+                    'Ipv6Ranges': [{ 'CidrIpv6': Cidr_Ipv6 }],
+                },
+            ]
+        }
+    }
+    # {
+    #     'name': 'gatekeeper-ingress',
+    #     'zone': 'us-east-1a',
+    #     'n_instances': 1,
+    #     'instance_type': 't2.large',
     #     # 'launch_script': 'src/mysql_cluster.sh'
     #     'security_group': {
     #         'name': 'gatekeeper-ingress',
@@ -127,30 +177,30 @@ deployment_configs = [
     #         ]
     #     }
     # },
-    {
-        'name': 'proxy',
-        'zone': 'us-east-1a',
-        'n_instances': 1,
-        'instance_type': 't2.large',
-        'launch_script': 'src/proxy.sh',
-        'security_group': {
-            'GroupName': 'proxy',
-            'IpPermissions':[
-                {
-                    'IpProtocol': 'tcp',
-                    'FromPort': 22,
-                    'ToPort': 22,
-                    'IpRanges': [{'CidrIp': Cidr_ip}],
-                    'Ipv6Ranges': [{ 'CidrIpv6': Cidr_Ipv6 }],
-                },
-                {
-                    'IpProtocol': 'tcp',
-                    'FromPort': 3000,
-                    'ToPort': 3000,
-                    'IpRanges': [{'CidrIp': Cidr_ip}],
-                    'Ipv6Ranges': [{ 'CidrIpv6': Cidr_Ipv6 }],
-                },
-            ]
-        }
-    }
+    # {
+    #     'name': 'proxy',
+    #     'zone': 'us-east-1a',
+    #     'n_instances': 1,
+    #     'instance_type': 't2.large',
+    #     'launch_script': 'src/proxy.sh',
+    #     'security_group': {
+    #         'GroupName': 'proxy',
+    #         'IpPermissions':[
+    #             {
+    #                 'IpProtocol': 'tcp',
+    #                 'FromPort': 22,
+    #                 'ToPort': 22,
+    #                 'IpRanges': [{'CidrIp': Cidr_ip}],
+    #                 'Ipv6Ranges': [{ 'CidrIpv6': Cidr_Ipv6 }],
+    #             },
+    #             {
+    #                 'IpProtocol': 'tcp',
+    #                 'FromPort': 3000,
+    #                 'ToPort': 3000,
+    #                 'IpRanges': [{'CidrIp': Cidr_ip}],
+    #                 'Ipv6Ranges': [{ 'CidrIpv6': Cidr_Ipv6 }],
+    #             },
+    #         ]
+    #     }
+    # }
 ]
