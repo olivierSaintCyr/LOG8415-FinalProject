@@ -169,40 +169,7 @@ if __name__ == '__main__':
         client=client
     )
 
-    # setup_gatekeeper_trusted_host(
-    #     trusted_host_info=trusted_host,
-    #     proxy_info=proxy,
-    # )
-
-    # Create keys and send it to ingress for ssh tunnel
-    # create_ingress_key(
-    #     ingress_public=ingress['PublicDnsName'],
-    #     trusted_host_public=trusted_host['PublicDnsName']
-    # )
-
-    # create_trusted_host_key(
-    #     trusted_host_public=trusted_host['PublicDnsName'],
-    #     proxy_public=proxy['PublicDnsName']
-    # )
-    
-    # Setup tunnel
-    # print('INGRESS TUNNEL')
-    # tunnel_ingress_to_trusted_host_cmd = get_setup_tunnel_cmd(
-    #     port_from=80,
-    #     port_to=80,
-    #     key_path=f'{INGRESS_KEY_NAME}.pem',
-    #     host=trusted_host['PrivateIpAddress'],
-    #     user='ubuntu',
-    #     external=True,
-    # )
-    # print(tunnel_ingress_to_trusted_host_cmd)
-
-    # utils.exec_ssh_command(
-    #     server=ingress['PublicDnsName'],
-    #     username='ubuntu',
-    #     key_path=SSH_KEY_PATH,
-    #     cmd=tunnel_ingress_to_trusted_host_cmd,
-    # )
-
-    
-
+    setup_gatekeeper_trusted_host(
+        trusted_host_info=trusted_host,
+        proxy_info=proxy,
+    )
