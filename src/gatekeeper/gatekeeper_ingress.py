@@ -34,7 +34,7 @@ def validate_request(body: dict, path: str):
     if not is_body_valid(path=path, body=body):
         return 'INVALID_BODY', 400
     
-    if path == '/query' and not is_query_valid(query=body['query']):
+    if path == '/query' and not is_query_valid(query=body['query'].lower()):
         return 'FORBIDEN_SQL_QUERY', 403
     
     return None, 200
