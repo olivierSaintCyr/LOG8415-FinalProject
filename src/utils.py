@@ -28,10 +28,13 @@ def exec_ssh_command(server: str, username: str, key_path: str, cmd: str, wait=T
     with paramiko.SSHClient() as ssh:
         ssh.set_missing_host_key_policy(paramiko.AutoAddPolicy())
         ssh.connect(server, username=username, pkey=pkey)
-        ssh_stdin, ssh_stdout, ssh_stderr = ssh.exec_command(cmd)
-        if wait:
-            print("stdout:", ssh_stdout.readlines())
-            print("stderr:", ssh_stderr.readlines())
+        try:
+            ssh_stdin, ssh_stdout, ssh_stderr = ssh.exec_command(cmd, timeout=15)
+            if wait:
+                print("stdout:", ssh_stdout.readlines())
+                print("stderr:", ssh_stderr.readlines())
+        except TimeoutError:
+            print("Command timeout")
 
 def create_key(key_name: str, key_dir: str):
     key_file = os.path.join(key_dir, f'{key_name}.pem')
@@ -54,10 +57,11 @@ def add_key_to_instances(pub_key: str, hosts: list[dict], key_path: str):
             '''
         )
 
-def scp_to_instance(host: str, user: str, key_file: str, file: str):
+def scp_to_instance(host: str, user: str, key_file: str, files: str, location: str = ''):
     out = subprocess.check_output(f'pwd')
     print(out)
+    instance_path = os.path.join(f'/home/{user}', location)
     try:
-        out = subprocess.check_output(['scp', '-i', key_file, file, f'{user}@{host}:/home/{user}'])
+        out = subprocess.check_output(['scp', '-i', key_file, *files, f'{user}@{host}:{instance_path}'])
     except subprocess.CalledProcessError as e:
         print(e.output)

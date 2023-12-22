@@ -28,17 +28,10 @@ DEPLOYMENT_FILE = 'fake_deployment_cluster.yml'
 CLUSTER_NAME = 'sql_cluster'
 PROXY_CONFIG_PATH = 'src/proxy/config.json'
 
-if __name__ == '__main__':
+def generate_proxy_config(client):
     print('Generating proxy configuration file...')
     
-    load_dotenv()
-    session = boto3.session.Session(
-        aws_access_key_id=os.getenv('aws_access_key_id'),
-        aws_secret_access_key=os.getenv('aws_secret_access_key'),
-        aws_session_token=os.getenv('aws_session_token'),
-        region_name='us-east-1',
-    )
-    client = session.client('ec2')
+    
 
     instance_ids = utils.get_cluster_instances(
         deployment_file=DEPLOYMENT_FILE,
@@ -66,3 +59,15 @@ if __name__ == '__main__':
     )
 
     print('Proxy configuration file done!')
+
+if __name__ == '__main__':
+    load_dotenv()
+    session = boto3.session.Session(
+        aws_access_key_id=os.getenv('aws_access_key_id'),
+        aws_secret_access_key=os.getenv('aws_secret_access_key'),
+        aws_session_token=os.getenv('aws_session_token'),
+        region_name='us-east-1',
+    )
+    client = session.client('ec2')
+    generate_proxy_config(client=client)
+    
