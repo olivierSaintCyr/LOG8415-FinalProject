@@ -114,12 +114,12 @@ deployment_configs = [
     #     }
     # },
     {
-        'name': 'gatekeeper-egress',
+        'name': 'gatekeeper-trusted-host',
         'zone': 'us-east-1a',
         'n_instances': 1,
         'instance_type': 't2.large',
         'security_group': {
-            'GroupName': 'gatekeeper-egress',
+            'GroupName': 'gatekeeper-trusted-host',
             'IpPermissions':[
                 {
                     'IpProtocol': 'tcp',
@@ -158,14 +158,14 @@ deployment_configs = [
     #     }
     # },
     # {
-    #     'name': 'gatekeeper-egress',
+    #     'name': 'gatekeeper-trusted-host',
     #     'zone': 'us-east-1a',
     #     'n_instances': 1,
     #     'instance_type': 't2.large',
     #     'public_ip': False,
     #     # 'launch_script': 'src/mysql_cluster.sh'
     #     'security_group': {
-    #         'name': 'gatekeeper-egress',
+    #         'name': 'gatekeeper-trusted-host',
     #         'ip_permissions':[
     #             {
     #                 'IpProtocol': 'tcp',

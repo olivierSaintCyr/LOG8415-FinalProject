@@ -2,7 +2,7 @@ from dotenv import load_dotenv
 import boto3
 import os
 import utils
-from setup_gatekeeper import get_instances_info
+from gatekeeper.setup_gatekeeper import get_instances_info
 
 def get_firewall_setup_cmds(ingress_ip: str, proxy_ip: str):
     return [
@@ -36,18 +36,18 @@ if __name__ == '__main__':
     )
     client = session.client('ec2')
 
-    egress, ingress, proxy = get_instances_info(client=client)
+    trusted, ingress, proxy = get_instances_info(client=client)
 
-    # Add firewall config to egress
-    egress_firewall_setup_cmds = get_firewall_setup_cmds(
+    # Add firewall config to trusted-host
+    trusted_host_firewall_setup_cmds = get_firewall_setup_cmds(
         ingress_ip=ingress['PrivateIpAddress'],
         proxy_ip=proxy['PrivateIpAddress'],
     )
-    egress_firewall_setup_cmd = "; ".join(egress_firewall_setup_cmds)
-    print(egress_firewall_setup_cmd)
+    trusted_host_firewall_setup_cmd = "; ".join(trusted_host_firewall_setup_cmds)
+    print(trusted_host_firewall_setup_cmd)
     utils.exec_ssh_command(
-        server=egress['PublicDnsName'],
+        server=trusted['PublicDnsName'],
         username='ubuntu',
         key_path=SSH_KEY_PATH,
-        cmd=egress_firewall_setup_cmd
+        cmd=trusted_host_firewall_setup_cmd
     )

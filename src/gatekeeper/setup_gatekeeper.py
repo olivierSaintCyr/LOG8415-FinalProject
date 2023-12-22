@@ -1,18 +1,19 @@
+from os import path
+import sys
+sys.path.append(path.join(path.dirname(__file__), '..'))
+
 import boto3
 import utils
 from dotenv import load_dotenv
 import os
 
-
-
-DEPLOYMENT_FILE = 'deployment_egress.yml'
+DEPLOYMENT_FILE = 'deployment_trusted_host.yml'
 DEPLOYMENT_FILE_2 = 'deployment_fake_ingress.yml' # TODO combine both of them
 DEPLOYMENT_FILE_3 = 'deployment_proxy.yml' # TODO combine both of them
 SSH_KEY_PATH = 'final_project_gen_key.pem'
 
-
 INGRESS_KEY_NAME = 'ingress_key'
-EGRESS_KEY_NAME = 'egress_key'
+TRUSTED_HOST_KEY_NAME = 'trusted_host_key'
 
 def get_instances_info(client):
     def order_instance(instance_descriptions, instances_ids: list[str]):
@@ -24,7 +25,7 @@ def get_instances_info(client):
 
     instance_ids = utils.get_cluster_instances(
         deployment_file=DEPLOYMENT_FILE,
-        cluster_name='gatekeeper-egress',
+        cluster_name='gatekeeper-trusted-host',
     )
 
     instance_ids.extend(utils.get_cluster_instances(
@@ -43,10 +44,10 @@ def get_instances_info(client):
     )['Reservations']
     instance_descriptions = order_instance(instance_descriptions, instance_ids)
 
-    egress = instance_descriptions[0]['Instances'][0]
+    trusted_host = instance_descriptions[0]['Instances'][0]
     ingress = instance_descriptions[1]['Instances'][0]
     proxy = instance_descriptions[2]['Instances'][0]
-    return egress, ingress, proxy
+    return trusted_host, ingress, proxy
 
 def get_setup_tunnel_cmd(port_from: int, port_to: int, key_path: str, host: str, user: str, external: bool = False):
     from_map = f'0.0.0.0:{port_from}' if external else port_from
@@ -62,7 +63,7 @@ def create_and_add_key(from_public, to_public, gen_key_path):
         host=from_public,
         user='ubuntu',
         key_file=SSH_KEY_PATH,
-        file=key_file,
+        files=[key_file],
     )
     print('sending keyfile', key_file, from_public)
 
@@ -74,18 +75,18 @@ def create_and_add_key(from_public, to_public, gen_key_path):
         key_path=SSH_KEY_PATH
     )
 
-def create_ingress_key(ingress_public: str, egress_public: str):
+def create_ingress_key(ingress_public: str, trusted_host_public: str):
     create_and_add_key(
         from_public=ingress_public,
-        to_public=egress_public,
+        to_public=trusted_host_public,
         gen_key_path=INGRESS_KEY_NAME
     )
 
-def create_egress_key(egress_public: str, proxy_public: str):
+def create_trusted_host_key(trusted_host_public: str, proxy_public: str):
     create_and_add_key(
-        from_public=egress_public,
+        from_public=trusted_host_public,
         to_public=proxy_public,
-        gen_key_path=EGRESS_KEY_NAME,
+        gen_key_path=TRUSTED_HOST_KEY_NAME,
     )
 
 if __name__ == '__main__':
@@ -98,52 +99,52 @@ if __name__ == '__main__':
     )
     client = session.client('ec2')
     
-    egress, ingress, proxy = get_instances_info(client=client)
+    trusted_host, ingress, proxy = get_instances_info(client=client)
     
     # Create keys and send it to ingress for ssh tunnel
     create_ingress_key(
         ingress_public=ingress['PublicDnsName'],
-        egress_public=egress['PublicDnsName']
+        trusted_host_public=trusted_host['PublicDnsName']
     )
 
-    create_egress_key(
-        egress_public=egress['PublicDnsName'],
+    create_trusted_host_key(
+        trusted_host_public=trusted_host['PublicDnsName'],
         proxy_public=proxy['PublicDnsName']
     )
     
     # Setup tunnel
     print('INGRESS TUNNEL')
-    tunnel_ingress_to_egress_cmd = get_setup_tunnel_cmd(
+    tunnel_ingress_to_trusted_host_cmd = get_setup_tunnel_cmd(
         port_from=80,
         port_to=80,
         key_path=f'{INGRESS_KEY_NAME}.pem',
-        host=egress['PrivateIpAddress'],
+        host=trusted_host['PrivateIpAddress'],
         user='ubuntu',
         external=True,
     )
-    print(tunnel_ingress_to_egress_cmd)
+    print(tunnel_ingress_to_trusted_host_cmd)
 
     utils.exec_ssh_command(
         server=ingress['PublicDnsName'],
         username='ubuntu',
         key_path=SSH_KEY_PATH,
-        cmd=tunnel_ingress_to_egress_cmd,
+        cmd=tunnel_ingress_to_trusted_host_cmd,
     )
 
-    print('EGRESS TUNNEL')
-    tunnel_egress_to_proxy_cmd = get_setup_tunnel_cmd(
+    print('TRUSTED_HOST TUNNEL')
+    tunnel_trusted_host_to_proxy_cmd = get_setup_tunnel_cmd(
         port_from=80,
         port_to=3000,
-        key_path=f'{EGRESS_KEY_NAME}.pem',
+        key_path=f'{TRUSTED_HOST_KEY_NAME}.pem',
         host=proxy['PrivateIpAddress'],
         user='ubuntu',
     )
-    print(tunnel_egress_to_proxy_cmd)
+    print(tunnel_trusted_host_to_proxy_cmd)
 
     utils.exec_ssh_command(
-        server=egress['PublicDnsName'],
+        server=trusted_host['PublicDnsName'],
         username='ubuntu',
         key_path=SSH_KEY_PATH,
-        cmd=tunnel_egress_to_proxy_cmd,
+        cmd=tunnel_trusted_host_to_proxy_cmd,
     )
 
