@@ -1,0 +1,14 @@
+{
+    "trustedHostname": "ip-172-31-87-11.ec2.internal",
+    "forbidenCommands": [
+        "DROP DATABASE"
+    ],
+    "bodyFields": {
+        "/mode": [
+            "mode"
+        ],
+        "/query": [
+            "query"
+        ]
+    }
+}

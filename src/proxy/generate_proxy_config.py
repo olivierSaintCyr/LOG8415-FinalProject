@@ -31,8 +31,6 @@ PROXY_CONFIG_PATH = 'src/proxy/config.json'
 def generate_proxy_config(client):
     print('Generating proxy configuration file...')
     
-    
-
     instance_ids = utils.get_cluster_instances(
         deployment_file=DEPLOYMENT_FILE,
         cluster_name=CLUSTER_NAME,
