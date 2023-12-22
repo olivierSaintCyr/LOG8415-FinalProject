@@ -14,7 +14,7 @@ DEPLOYMENT_FILE = 'fake_deployment_cluster.yml'
 CLUSTER_NAME = 'sql_cluster'
 
 if __name__ == '__main__':
-    print('Generating proxy configuration file...')
+    print('Generating proxy ssh key file...')
     
     load_dotenv()
     session = boto3.session.Session(
