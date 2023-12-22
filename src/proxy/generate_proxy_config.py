@@ -6,7 +6,7 @@ import utils
 from dotenv import load_dotenv
 import os
 import boto3
-from start_sql_cluster import get_sql_cluster_node_role
+from mysql.start_sql_cluster import get_sql_cluster_node_role
 import json
 
 def node_sql_roles_to_proxy_config(node_roles: dict):
