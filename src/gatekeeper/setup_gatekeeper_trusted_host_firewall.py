@@ -1,27 +1,20 @@
 from dotenv import load_dotenv
 import boto3
 import os
+from os import path
+import sys
+sys.path.append(path.join(path.dirname(__file__), '..'))
 import utils
 from gatekeeper.setup_gatekeeper import get_instances_info
 
 def get_firewall_setup_cmds(ingress_ip: str, proxy_ip: str):
     return [
-        "sudo iptables -F",
-        "sudo iptables -P INPUT DROP",
-        "sudo iptables -P FORWARD DROP",
-        "sudo iptables -P OUTPUT DROP",
-        
-        "sudo iptables -A INPUT -p tcp --dport 22 -m conntrack --ctstate NEW,ESTABLISHED -j ACCEPT",
-        "sudo iptables -A OUTPUT -p tcp --sport 22 -m conntrack --ctstate ESTABLISHED -j ACCEPT",
-
-        "sudo iptables -A OUTPUT -p tcp --dport 22 -m conntrack --ctstate NEW,ESTABLISHED -j ACCEPT",
-        "sudo iptables -A INPUT -p tcp --sport 22 -m conntrack --ctstate ESTABLISHED -j ACCEPT",
-
-        f"sudo iptables -A INPUT -p tcp -s {ingress_ip} --dport 80 -m conntrack --ctstate NEW,ESTABLISHED -j ACCEPT",
-        f"sudo iptables -A OUTPUT -p tcp -s {ingress_ip} --sport 80 -m conntrack --ctstate ESTABLISHED -j ACCEPT",
-
-        f"sudo iptables -A OUTPUT -p tcp -d {proxy_ip} --dport 80 -m conntrack --ctstate NEW,ESTABLISHED -j ACCEPT"
-        f"sudo iptables -A INPUT -p tcp -s {proxy_ip} --sport 80 -m conntrack --ctstate ESTABLISHED -j ACCEPT"
+        "sudo ufw allow 22",
+        f"sudo ufw allow proto tcp from {ingress_ip} to any port 80",  # Allow HTTP
+        "sudo ufw default deny outgoing",  # Deny all outgoing connections
+        f"sudo ufw allow out to {proxy_ip} port 80",  # Allow outgoing HTTP to proxy_ip
+        "sudo ufw allow out to any port 53",  # Allow outgoing DNS query
+        "sudo ufw --force enable",  # Enable the firewall
     ]
 
 SSH_KEY_PATH = 'final_project_gen_key.pem'
