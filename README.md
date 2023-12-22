@@ -52,6 +52,18 @@ python src/gatekeeper/setup_gatekeeper.py
 ## Benchmark
 - Connect to sql_bench instance
 - Now follow this tutorial to benchmark your database [here](https://github.com/akopytov/sysbench)
+### To benchmark the cluster
+```
+sysbench oltp_read_write --table_size=100000 --threads=32 --time=10 --max-requests=0 --mysql-host=<mysql-master-ip> --mysql-port=3306 --mysql-db=sakila --mysql-user=<your user> --mysql-password=<your password> prepare
+sysbench oltp_read_write --table_size=100000 --threads=32 --time=10 --max-requests=0 --mysql-host=<mysql-master-ip> --mysql-port=3306 --mysql-db=sakila --mysql-user=<your user> --mysql-password=<your password> run
+sysbench oltp_read_write --table_size=100000 --threads=32 --time=10 --max-requests=0 --mysql-host=<mysql-master-ip> --mysql-port=3306 --mysql-db=sakila --mysql-user=<your user> --mysql-password=<your password> cleanup
+```
+### To benchmark the standalone
+```
+sysbench oltp_read_write --table_size=100000 --threads=32 --time=10 --max-requests=0 --mysql-host=<mysql-standalone-ip> --mysql-port=3306 --mysql-db=sakila --mysql-user=<your user> --mysql-password=<your password> prepare
+sysbench oltp_read_write --table_size=100000 --threads=32 --time=10 --max-requests=0 --mysql-host=<mysql-standalone-ip> --mysql-port=3306 --mysql-db=sakila --mysql-user=<your user> --mysql-password=<your password> run
+sysbench oltp_read_write --table_size=100000 --threads=32 --time=10 --max-requests=0 --mysql-host=<mysql-standalone-ip> --mysql-port=3306 --mysql-db=sakila --mysql-user=<your user> --mysql-password=<your password> cleanup
+```
 ## How to use
 Once everything is setup you can send a request to the gatekeeper ingress using HTTP
 ```
