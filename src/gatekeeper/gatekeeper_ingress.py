@@ -39,7 +39,6 @@ def validate_request(body: dict, path: str):
     
     return None, 200
 
-
 @app.route('/', methods=["GET"])
 @app.route('/mode', methods=['GET', 'PUT'])
 @app.route('/query', methods=['POST'])
@@ -52,7 +51,7 @@ def redirect_to_trusted_host():
         )
         if status_code != 200:
             return jsonify({ 'error': error } ), status_code
-    print('request coming in')
+    
     res = requests.request(
         method=request.method,
         url=request.url.replace(request.host_url, f'http://{trusted_host}/'),
@@ -61,7 +60,7 @@ def redirect_to_trusted_host():
         cookies=request.cookies,
         allow_redirects=False,
     )
-    print('request out in')
+
     excluded_headers = ['content-encoding', 'content-length', 'transfer-encoding', 'connection']  #NOTE we here exclude all "hop-by-hop headers" defined by RFC 2616 section 13.5.1 ref. https://www.rfc-editor.org/rfc/rfc2616#section-13.5.1
     headers = [
         (k,v) for k,v in res.raw.headers.items()
