@@ -60,7 +60,7 @@ def add_key_to_instances(pub_key: str, hosts: list[dict], key_path: str):
 def scp_to_instance(host: str, user: str, key_file: str, files: str, location: str = ''):
     out = subprocess.check_output(f'pwd')
     print(out)
-    instance_path = os.path.join(f'/home/{user}', location)
+    instance_path = f'/home/{user}' if len(location) == 0 else location
     try:
         out = subprocess.check_output(['scp', '-i', key_file, *files, f'{user}@{host}:{instance_path}'])
     except subprocess.CalledProcessError as e:

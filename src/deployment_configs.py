@@ -8,7 +8,7 @@ deployment_configs = [
     #     'zone': 'us-east-1a',
     #     'n_instances': 1,
     #     'instance_type': 't2.micro',
-    #     'launch_script': 'src/mysql_standalone.sh',
+    #     'launch_script': 'src/myql/mysql_standalone.sh',
     #     'security_group': {
     #         'name': 'security_cluster',
     #         'IpPermissions':[
@@ -34,7 +34,6 @@ deployment_configs = [
     #     'zone': 'us-east-1a',
     #     'n_instances': 1,
     #     'instance_type': 't2.micro',
-    #     # 'launch_script': 'src/mysql_standalone.sh',
     #     'security_group': {
     #         'GroupName': 'sql_bench',
     #         'IpPermissions':[
@@ -60,7 +59,7 @@ deployment_configs = [
     #     'zone': 'us-east-1a',
     #     'n_instances': 4,
     #     'instance_type': 't2.micro',
-    #     'launch_script': 'src/mysql_cluster.sh',
+    #     'launch_script': 'src/myql/mysql_cluster.sh',
     #     'security_group': {
     #         'name': 'security_cluster',
     #         'ip_permissions':[
@@ -157,25 +156,6 @@ deployment_configs = [
     #         ]
     #     }
     # },
-    # {
-    #     'name': 'gatekeeper-trusted-host',
-    #     'zone': 'us-east-1a',
-    #     'n_instances': 1,
-    #     'instance_type': 't2.large',
-    #     'public_ip': False,
-    #     # 'launch_script': 'src/mysql_cluster.sh'
-    #     'security_group': {
-    #         'name': 'gatekeeper-trusted-host',
-    #         'ip_permissions':[
-    #             {
-    #                 'IpProtocol': 'tcp',
-    #                 'FromPort': 22,
-    #                 'ToPort': 22,
-    #                 'IpRanges': [{'CidrIp': Cidr_ip}],
-    #                 'Ipv6Ranges': [{ 'CidrIpv6': Cidr_Ipv6 }],
-    #             },
-    #         ]
-    #     }
     # },
     # {
     #     'name': 'proxy',
