@@ -15,6 +15,7 @@ FILES_TO_SCP = [
     'src/proxy/requirements.txt',
     generate_proxy_config.PROXY_CONFIG_PATH,
     'src/proxy/proxy_key.pem',
+    'src/proxy/app.py'
 ]
 
 def get_deployment_cmds(proxy_hostname):

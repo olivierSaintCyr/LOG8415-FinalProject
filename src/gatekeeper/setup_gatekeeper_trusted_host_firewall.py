@@ -12,7 +12,7 @@ def get_firewall_setup_cmds(ingress_ip: str, proxy_ip: str):
         "sudo ufw allow 22",
         f"sudo ufw allow proto tcp from {ingress_ip} to any port 80",  # Allow HTTP
         "sudo ufw default deny outgoing",  # Deny all outgoing connections
-        f"sudo ufw allow out to {proxy_ip} port 80",  # Allow outgoing HTTP to proxy_ip
+        f"sudo ufw allow out to {proxy_ip} port 22",
         "sudo ufw allow out to any port 53",  # Allow outgoing DNS query
         "sudo ufw --force enable",  # Enable the firewall
     ]
