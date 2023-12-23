@@ -1,5 +1,24 @@
 clusters:
+  gatekeeper-ingress:
+  - i-09dde6b2d888e4fbb
+  gatekeeper-trusted-host:
+  - i-0f8391fc2bc9add3a
+  proxy:
+  - i-0e4c0f14d5110415f
+  sql_bench:
+  - i-0a2404344c750072e
+  sql_cluster:
+  - i-05731be77fb068a01
+  - i-0eda9b5c34e781b38
+  - i-0218ab2bbeb0ce09e
+  - i-08a40fe02f3ee1393
   standalone:
-  - i-01e4c17cf0508e761
+  - i-05e6f068475c09fd0
 rules: {}
-security_group_id: sg-08e69b349ef0091d6
+security_group_ids:
+- sg-0204bf11057a96543
+- sg-0b7fc57030c17e767
+- sg-0704b6754f6cadaa5
+- sg-0f8cb2ebcdbe47aea
+- sg-0afa4007dc10c97f6
+- sg-0067e0f0f647e55c8

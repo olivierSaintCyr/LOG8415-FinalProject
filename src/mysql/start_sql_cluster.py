@@ -48,7 +48,7 @@ def start_sql_cluster(node_roles: dict):
         cmd=get_start_sqld_cmd()
     )
 
-DEPLOYMENT_FILE = 'fake_deployment_cluster.yml'
+DEPLOYMENT_FILE = 'deployment.yml'
 CLUSTER_NAME = 'sql_cluster'
 USERNAME = 'ubuntu'
 SSH_KEY_PATH = 'final_project_gen_key.pem'

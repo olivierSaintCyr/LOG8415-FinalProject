@@ -24,7 +24,7 @@ def generate_proxy_config_file(node_roles: dict, config_file: str):
     with open(config_file, 'w') as f:
         json.dump(proxy_config, f, indent=4)
 
-DEPLOYMENT_FILE = 'fake_deployment_cluster.yml'
+DEPLOYMENT_FILE = 'deployment.yml'
 CLUSTER_NAME = 'sql_cluster'
 PROXY_CONFIG_PATH = 'src/proxy/config.json'
 

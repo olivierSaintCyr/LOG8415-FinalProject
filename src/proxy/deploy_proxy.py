@@ -9,7 +9,7 @@ import boto3
 import json
 import proxy.generate_proxy_config as generate_proxy_config
 
-DEPLOYMENT_FILE = 'deployment_proxy.yml'
+DEPLOYMENT_FILE = 'deployment.yml'
 SSH_KEY_FILE = 'final_project_gen_key.pem'
 FILES_TO_SCP = [
     'src/proxy/requirements.txt',

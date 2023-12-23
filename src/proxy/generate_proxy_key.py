@@ -10,7 +10,7 @@ import subprocess
 KEY_DIR = 'src/proxy'
 KEY_NAME = 'proxy_key'
 SSH_KEY = 'final_project_gen_key.pem'
-DEPLOYMENT_FILE = 'fake_deployment_cluster.yml'
+DEPLOYMENT_FILE = 'deployment.yml'
 CLUSTER_NAME = 'sql_cluster'
 
 if __name__ == '__main__':

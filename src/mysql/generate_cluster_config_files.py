@@ -8,7 +8,7 @@ import boto3
 
 GENERATED_FILES_LOCATION = 'src/mysql/'
 CLUSTER_NAME = 'sql_cluster'
-DEPLOYMENT_FILE = 'fake_deployment_cluster.yml'
+DEPLOYMENT_FILE = 'deployment.yml'
 
 def generate_my_cnf(path: str, file_name: str = 'my.cnf'):
     content = [

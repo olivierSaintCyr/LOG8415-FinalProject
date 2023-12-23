@@ -1,10 +1,10 @@
 {
     "sqlClusterHostnames": {
-        "master": "ip-172-31-85-193.ec2.internal",
+        "master": "ip-172-31-88-213.ec2.internal",
         "dataNodes": [
-            "ip-172-31-91-57.ec2.internal",
-            "ip-172-31-94-30.ec2.internal",
-            "ip-172-31-94-31.ec2.internal"
+            "ip-172-31-81-183.ec2.internal",
+            "ip-172-31-87-104.ec2.internal",
+            "ip-172-31-82-125.ec2.internal"
         ]
     }
 }

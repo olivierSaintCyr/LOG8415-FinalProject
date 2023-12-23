@@ -44,7 +44,7 @@ def get_vpc_id():
     return vpcs[0]['VpcId']
 
 # Function sets up cluster config, creates target group, instances, and registers targets.
-def setup_config(security_group_id, zone, name, n_instances, instance_type, security_group, launch_script=None, public_ip=True):
+def setup_config(security_group_id, zone, name, n_instances, instance_type, security_group, launch_script=None):
     print('APPLYTING CONFIG ', name)
     instance_ids = []
     try:
@@ -55,7 +55,6 @@ def setup_config(security_group_id, zone, name, n_instances, instance_type, secu
             cluster_name=name, 
             instance_type=instance_type,
             launch_script=launch_script,
-            has_public_ip=public_ip
         )
     except Exception as e:
         print(e, traceback.format_exc())
@@ -93,13 +92,7 @@ def create_instances(n_instances, security_group_id, zone, cluster_name, has_pub
         Placement={
             'AvailabilityZone': zone,
         },
-        NetworkInterfaces=[
-            {
-                'DeviceIndex': device_idx,
-                'AssociatePublicIpAddress': has_public_ip
-            } for device_idx in range(n_instances)
-        ],
-        # SecurityGroupIds=,
+        SecurityGroupIds=[security_group_id],
         Monitoring={ 'Enabled': True },
         UserData=get_launch_app_script_content(launch_script) if launch_script is not None else "",
         KeyName=key_name
@@ -107,11 +100,6 @@ def create_instances(n_instances, security_group_id, zone, cluster_name, has_pub
 
     instance_ids = [created_instance['InstanceId'] for created_instance in created_instances['Instances']]
 
-    for instance_id in instance_ids:
-        ec2_client.modify_instance_attribute(
-            InstanceId=instance_id,
-            Groups=[security_group_id],
-        )
     print('CREATED INSTANCES ', instance_ids)
     await_instances_running(instance_ids)
     return instance_ids
@@ -160,10 +148,12 @@ def save_deployment(deploy_info: str, deployment_file: str):
 def run():
     clusters = {} # instance ids, target_group_arn
     rules = {} # rules
+    security_group_ids = []
     try:
         for cluster_config in deployment_configs:
             print(cluster_config)
             security_group_id = create_security_group(security_group_config=cluster_config['security_group'])
+            security_group_ids.append(security_group_id)
             instance_ids = setup_config(security_group_id, **cluster_config)
             clusters[cluster_config['name']] = instance_ids
 
@@ -192,9 +182,9 @@ def run():
     deployment = {
         'clusters': clusters,
         'rules': rules,
-        'security_group_id': security_group_id,
-
+        'security_group_ids': security_group_ids,
     }
+
     save_deployment(deployment, DEPLOY_FILE)
     
 if __name__=='__main__':

@@ -8,9 +8,7 @@ from dotenv import load_dotenv
 import os
 import generate_ingress_config
 
-DEPLOYMENT_FILE = 'deployment_trusted_host.yml'
-DEPLOYMENT_FILE_2 = 'deployment_fake_ingress.yml' # TODO combine both of them
-DEPLOYMENT_FILE_3 = 'deployment_proxy.yml' # TODO combine both of them
+DEPLOYMENT_FILE = 'deployment.yml'
 SSH_KEY_PATH = 'final_project_gen_key.pem'
 
 INGRESS_KEY_NAME = 'ingress_key'
@@ -32,12 +30,12 @@ def get_instances_info(client):
     )
 
     instance_ids.extend(utils.get_cluster_instances(
-        deployment_file=DEPLOYMENT_FILE_2,
+        deployment_file=DEPLOYMENT_FILE,
         cluster_name='gatekeeper-ingress',
     ))
 
     instance_ids.extend(utils.get_cluster_instances(
-        deployment_file=DEPLOYMENT_FILE_3,
+        deployment_file=DEPLOYMENT_FILE,
         cluster_name='proxy',
     ))
 

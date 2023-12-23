@@ -16,7 +16,7 @@ BODY_FIELDS = {
     '/query': ['query']
 }
 
-DEPLOYMENT_FILE = 'deployment_trusted_host.yml'
+DEPLOYMENT_FILE = 'deployment.yml'
 CLUSTER_NAME = 'gatekeeper-trusted-host'
 CONFIG_FILE_PATH = 'src/gatekeeper/config.json'
 
