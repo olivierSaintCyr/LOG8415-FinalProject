@@ -40,8 +40,9 @@ class Proxy:
         self.mode = mode
     
     def is_query_write(self, query):
+        lower_query = query.lower()
         for write_query in self.write_queries:
-            if write_query in query:
+            if write_query in lower_query:
                 return True
         return False
     
@@ -83,6 +84,13 @@ class Proxy:
         ), master_host
 
     def exec_random(self, query):
+        if self.is_query_write(query):
+            print(f'random exec of {query} on master {self.hosts["master"]}')
+            return self.execute_query(
+                host=self.hosts['master'],
+                query=query,
+            ), self.hosts["master"]
+        
         host = random.choice(self.hosts['dataNodes']) if not self.is_query_write(query) else self.hosts['master']
         print(f'random exec of {query} on {host}')
         return self.execute_query(
